@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include partials/_header %>
+</head>
+  <body>
+    <table>
+    <p><strong>Links</strong></p>
+        <% for (var URL in urls) {%>
+      <!--add a form element for each shortened URL-->
+        <form method="POST" action='/urls/<%= URL %>/delete'>
+        <li><%= URL%> - <%= urls[URL]%></li>
+        <a href="/urls/<%=URL%>">Edit</a>
+        <input type="submit" value="Delete">
+        </li>
+      </form>
+        <%}%>
+    </table>
+  </body>
+</html>
