@@ -28,6 +28,21 @@ function generateRandomString() {
     return "DF" + NUM;
 }
 
+app.get('/urls', (req, res)=>{
+  let templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
+  res.render("urls_index", templateVars);
+});
+
+app.get('/urls/new', (req, res)=>{
+  let templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render('urls_new', templateVars);
+});
+
 app.get("/urls.json", (req, res) => {
     res.json(urlDatabase);
 });
@@ -83,7 +98,18 @@ app.post('/urls/:id/delete', (req, res)=>{
     var deletedURL = req.params.id;
     delete urlDatabase[deletedURL];
     res.redirect('/urls');
-})
+});
+
+// Login/Logout post requests
+app.post('/login', (req, res)=>{
+  res.cookie('username', req.body.username);
+  res.redirect('/urls')
+});
+
+app.post('/logout', (req, res)=>{
+  res.clearCookie('username')
+  res.redirect('/urls')
+});
 
 // SERVER listen
 app.listen(PORT, () => {
