@@ -19,10 +19,13 @@ app.set("view engine", "ejs")
 // Database and objects
 // ================================================================================
 
+//const userDatabase = require('./mock-data').users;
+//const urlDatabase = require('./mock-data').urls;
+
 // Database of short URL keys and the long URLS
 let urlDatabase = {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com"
+    "b2xVn2": {long: "http://www.lighthouselabs.ca", userID: "dave" },
+    "9sm5xK": {long: "http://www.google.com", userID: "dave"}
 };
 
 // Users object
@@ -44,7 +47,6 @@ let users = {
   }
 };
 
-
 // ================================================================================
 // Get requests
 // ================================================================================
@@ -55,22 +57,24 @@ app.get("/", (req, res) => {
 });
 
 // Sending urlDatabase data within the urls key
-app.get('/urls', (req, res)=>{
-  let templateVars =  {
+app.get("/urls", (req, res) => {
+  let templateVars = {
     urls: urlDatabase,
-    users: users,
     user_id: req.cookies['user_id']
   };
-  res.render('urls_index', templateVars);
+  res.render("urls_index", templateVars);
 });
 
-// Get request form urls_new to create/add shortURLs
+// form urls_new to create/add new shortened URLs
 app.get('/urls/new', (req, res)=>{
+  let user_id = req.cookies['user_id'];
   let templateVars = {
-    users: users,
-    user_id: req.cookies['user_id']
+    user: users[user_id],
   };
-  res.render('urls_new', templateVars);
+  if (user_id){
+    res.render("urls_new", templateVars);
+  }
+  res.redirect("/login");
 });
 
 // Returns registration page
@@ -85,23 +89,6 @@ app.get("/register", (req, res) => {
 // Create a Login Page
 app.get('/login', (req, res)=>{
   res.render('login' /*templateVars*/);
-});
-
-app.get("/urls", (req, res) => {
-    let templateVars = {
-      urls: urlDatabase,
-      users: users,
-      user_id: req.cookies['user_id']
-    };
-    res.render("urls_index", templateVars);
-});
-
-app.get('/urls/new', (req, res)=>{
-    let templateVars = {
-      users: users,
-      user_id: req.cookies['user_id']
-    };
-  res.render("urls_new", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -121,14 +108,14 @@ app.get('/urls/:id', (req, res)=>{
   let templateVars =  {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    users: users,
+    //users: users,
     user_id: req.cookies['user_id']
   };
   res.render('urls_show', templateVars);
 });
 
 // ================================================================================
-// Unused gets
+// Unused get requests
 // ================================================================================
 
 // app.get("/urls.json", (req, res) => {
@@ -161,15 +148,15 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
-  let authenticated;
+  let auth;
   for (var KEY in users) {
     if (users[KEY].email === email && users[KEY].password === password) {
       res.cookie('user_id', users[KEY].id);
       res.redirect('/urls');
-      authenticated = true;
+      auth = true;
     };
   };
-  if (!authenticated) {
+  if (!auth) {
     res.status(403).send('User with that email not found.');
   }
 });
@@ -194,7 +181,7 @@ app.post('/urls/:id', (req, res)=>{
   // check if :id is in the database
   urlDatabase[shortURL] = updatedURL;
   res.redirect('/urls/'+shortURL);
-})
+});
 
 //Post route that removes a URL resource:
 app.post('/urls/:id/delete', (req, res)=>{
@@ -202,9 +189,6 @@ app.post('/urls/:id/delete', (req, res)=>{
     delete urlDatabase[deletedURL];
     res.redirect('/urls');
 });
-
-
-
 
 // ================================================================================
 // Server listen
@@ -220,12 +204,27 @@ app.listen(PORT, () => {
 
 // Generate alphanumeric string
 function generateRandomString() {
-  var NUM ='';
-  var CDS = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  for (var i = 0; i < 6; i++){
+  let NUM ='';
+  let CDS = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  let length = 6;
+  for (var i = 0; i < length; i++){
     NUM += CDS.charAt(Math.floor(Math.random() * (CDS.length + 1) ));
   }
-  var POS = Math.floor(Math.random() * 6)+1;
-  var result = NUM.substr(0, POS) + "DF" + NUM.substr(POS);
+  let POS = Math.floor(Math.random() * length)+1;
+  let result = NUM.substr(0, POS) + "DF" + NUM.substr(POS);
   return result;
 }
+
+// Returns subset of URL database that belongs to users email
+function urlsForUser(id){
+
+}
+
+// 1. Only registered users can shorten URLs X
+// 2. URLs belong to users
+// 3. Users can only edit or delete their own URLs
+// 4. Users can only see their own shortened URLs
+// 5. Anyone can visit short URLs
+
+
+
