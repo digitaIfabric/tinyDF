@@ -161,18 +161,20 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
+  let authenticated;
   for (var KEY in users) {
     if (users[KEY].email === email && users[KEY].password === password) {
-      console.log('If');
       res.cookie('user_id', users[KEY].id);
       res.redirect('/urls');
-    }
+      authenticated = true;
+    };
+  };
+  if (!authenticated) {
+    res.status(403).send('User with that email not found.');
   }
-  res.cookie('user_id', req.body.username);
-  res.redirect('/urls');
 });
 
-// Logout post request
+// Logout post request (logout handler)
 app.post('/logout', (req, res) => {
   res.clearCookie('user_id');
   res.redirect('/urls');
@@ -189,6 +191,7 @@ app.post('/urls', (req, res) => {
 app.post('/urls/:id', (req, res)=>{
   var updatedURL = req.body.updatedURL;
   var shortURL = req.params.id;
+  // check if :id is in the database
   urlDatabase[shortURL] = updatedURL;
   res.redirect('/urls/'+shortURL);
 })
