@@ -19,21 +19,24 @@ app.set("view engine", "ejs")
 // Database and objects
 // ================================================================================
 
-//const userDatabase = require('./mock-data').users;
-//const urlDatabase = require('./mock-data').urls;
-
 // Database of short URL keys and the long URLS
 let urlDatabase = {
-    "b2xVn2": {long: "http://www.lighthouselabs.ca", userID: "dave" },
-    "9sm5xK": {long: "http://www.google.com", userID: "dave"}
+    "b2xVn2": {url: "http://www.lighthouselabs.ca", userID: "dave" },
+    "9sm5xK": {url: "http://www.google.com", userID: "userRandomID"}
 };
+
+// let urlDatabase = {
+//   "b2xVn2": {shortURL:  url: "http://www.lighthouselabs.ca", userID: "dave" },
+//   "9sm5xK": {url: "http://www.google.com", userID: "userRandomID"}
+// };
+
 
 // Users object
 let users = {
   "userRandomID": {
     id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    email: "one@example.com",
+    password: "1"
   },
   "user2RandomID": {
     id: "user2RandomID",
@@ -59,7 +62,7 @@ app.get("/", (req, res) => {
 // Sending urlDatabase data within the urls key
 app.get("/urls", (req, res) => {
   let templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies['user_id']),
     user_id: req.cookies['user_id']
   };
   res.render("urls_index", templateVars);
@@ -96,7 +99,7 @@ app.get("/u/:shortURL", (req, res) => {
     users: users,
     user_id: req.cookies['user_id']
   };
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].url;
   if (longURL) {
     res.redirect(longURL, templateVars);
   } else {
@@ -104,15 +107,40 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
+// app.get('/urls/:id', (req, res)=>{
+//   let templateVars =  {
+//     shortURL: req.params.id,
+//     longURL: urlDatabase[req.params.id],
+//     //users: users,
+//     user_id: req.cookies['user_id']
+//   };
+//   res.render('urls_show', templateVars);
+// });
+
 app.get('/urls/:id', (req, res)=>{
   let templateVars =  {
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id],
-    //users: users,
+    longURL: urlDatabase[req.params.id].url,
+    // users: users,
     user_id: req.cookies['user_id']
+
   };
-  res.render('urls_show', templateVars);
+  if (belongsToUser(req.cookies['user_id'], req.params.id)){
+    res.render('urls_show', templateVars);
+  } else {
+    res.send('You have to log in!')
+  }
 });
+
+//create a function that tests if IDs are the same
+function belongsToUser(userid, dbuserid){
+  for (var key in urlDatabase[dbuserid]) {
+    if (userid === urlDatabase[dbuserid].userID) {
+    return true;
+    }
+  }
+return false;
+}
 
 // ================================================================================
 // Unused get requests
@@ -170,25 +198,33 @@ app.post('/logout', (req, res) => {
 // Post route that shortens URL
 app.post('/urls', (req, res) => {
     var shortURL = generateRandomString();
-    urlDatabase[shortURL] = req.body.longURL;
+    urlDatabase[shortURL] = {url: req.body.longURL, userID: req.cookies['user_id']};
     res.redirect(302, '/urls/'+shortURL);
 });
 
 // Post route that updates a URL resource
 app.post('/urls/:id', (req, res)=>{
   var updatedURL = req.body.updatedURL;
+  let auth;
+  //console.log(updatedURL);
   var shortURL = req.params.id;
-  // check if :id is in the database
-  urlDatabase[shortURL] = updatedURL;
-  res.redirect('/urls/'+shortURL);
+  //console.log(shortURL);
+  for (var KEY in urlDatabase[shortURL]) {
+    urlDatabase[shortURL].url = updatedURL;
+    res.redirect('/urls/'+shortURL);
+  }
 });
 
 //Post route that removes a URL resource:
 app.post('/urls/:id/delete', (req, res)=>{
-    var deletedURL = req.params.id;
-    delete urlDatabase[deletedURL];
-    res.redirect('/urls');
-});
+  var deletedURL = req.params.id;
+  for (var KEY in urlDatabase) {
+    if (req.cookies['user_id'] === urlDatabase[KEY].userID) {
+      delete urlDatabase[KEY];
+    }
+  }
+  res.redirect('/urls')
+})
 
 // ================================================================================
 // Server listen
@@ -217,13 +253,19 @@ function generateRandomString() {
 
 // Returns subset of URL database that belongs to users email
 function urlsForUser(id){
-
+  var specificDatabase =  {};
+  for (var KEY in urlDatabase) {
+    if (urlDatabase[KEY].userID === id) {
+      specificDatabase[KEY] = {url: urlDatabase[KEY].url, userID: urlDatabase[KEY].userID}
+    }
+  }
+  return specificDatabase;
 }
 
 // 1. Only registered users can shorten URLs X
-// 2. URLs belong to users
+// 2. URLs belong to users X
 // 3. Users can only edit or delete their own URLs
-// 4. Users can only see their own shortened URLs
+// 4. Users can only see their own shortened URLs X
 // 5. Anyone can visit short URLs
 
 

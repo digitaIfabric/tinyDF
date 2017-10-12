@@ -10,7 +10,7 @@
         <% for (var URL_KEY in urls) {%>
       <!--add a form element for each shortened URL-->
             <form method="POST" action='/urls/<%= URL_KEY %>/delete'>
-            <li><%= URL_KEY %> - <%= urls[URL_KEY] %></li>
+            <li><%= URL_KEY %> - <%= urls[URL_KEY].url %></li>
             <a href="/urls/<%= URL_KEY %>">Edit</a>
             <input type="submit" value="Delete">
         </li>
