@@ -1,20 +1,19 @@
-<html lang="en">
+<!DOCTYPE html>
+<html>
+
 <head>
-    <title>!!!</title>
+    <title>tinyDF</title>
 </head>
+
 <body>
-<!--  Form that POSTs to /login -->
-<% if (username) { %>
-<span><%=username%></span>
+<% if (!user_id) { %>
+    <a href="/login">login</a>
+    <a href="/register">register</a>
+<% } else { %>
+<span><%= user_id %></span>
 <form action="/logout" method="POST">
     <button>Logout</button>
 </form>
-<% } else { %>
-<form action="/login" method="POST">
-    <input type="text" name="username" placeholder="username">
-    <button>Login</button>
-</form>
 <% } %>
-
 </body>
 </html>
