@@ -5,10 +5,13 @@
 var express = require("express");
 var app = express();
 var PORT = process.env.PORT || 8080; // default port 8080
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
+
+// View engine
 app.set("view engine", "ejs")
 
 var urlDatabase = {
@@ -51,10 +54,28 @@ app.get("/hello", (req, res) => {
     res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+// POST route that shortens URL
 app.post("/urls", (req, res) => {
     var shortURL = generateRandomString();
     urlDatabase[shortURL] = req.body.longURL;
     res.redirect(302, '/urls/'+shortURL);
+});
+
+// POST route that updates a URL resource
+app.post('/urls/:id', (req, res)=>{
+  var updatedURL = req.body.updatedURL;
+  var shortURL = req.params.id;
+  urlDatabase[shortURL] = updatedURL;
+  res.redirect('/urls/'+shortURL);
+})
+
+app.get('/urls/:id', (req, res)=>{
+  let templateVars =  {
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id],
+    //username: req.cookies["username"]
+  };
+  res.render('urls_show', templateVars);
 });
 
 //POST route that removes a URL resource:
@@ -64,6 +85,7 @@ app.post('/urls/:id/delete', (req, res)=>{
     res.redirect('/urls');
 })
 
+// SERVER listen
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}!`);
 });
