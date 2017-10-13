@@ -6,7 +6,7 @@
 </head>
 
 <body>
-<% if (!user_id) { %>
+<% if (user_id !== null) { %>
     <a href="/login">login</a>
     <a href="/register">register</a>
 <% } else { %>
