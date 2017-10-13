@@ -8,12 +8,17 @@ const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const salt = bcrypt.genSaltSync(saltRounds);
+
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 // View engine
 app.set("view engine", "ejs")
+
 
 // ================================================================================
 // Database and objects
@@ -36,17 +41,17 @@ let users = {
   "userRandomID": {
     id: "userRandomID",
     email: "one@example.com",
-    password: "1"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", saltRounds)
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", saltRounds)
   },
   "dave": {
     id: "dave",
     email: "dwawryko@gmail.com",
-    password: "123456"
+    password: bcrypt.hashSync("123456", saltRounds)
   }
 };
 
@@ -164,8 +169,9 @@ app.post('/register', (req, res) => {
       var user_id = generateRandomString();
       var email = req.body.email;
       var password = req.body.password;
+      // VERIFY PASSWORD
       res.cookie('user_id', user_id);
-      users[user_id] = { id:user_id, email:email, password:password};
+      users[user_id] = { id:user_id, email:email, password: bcrypt.hashSync(password, 10)};
       res.redirect('/urls');
   } else {
     res.status(400).send('Please provide email and password');
@@ -178,8 +184,11 @@ app.post('/login', (req, res) => {
   let password = req.body.password;
   let auth;
   for (var KEY in users) {
-    if (users[KEY].email === email && users[KEY].password === password) {
-      res.cookie('user_id', users[KEY].id);
+    // VERIFY PASSWORD
+    //if (users[KEY].email === email && users[KEY].password === password) {
+    // arg 1 password
+    if (users[KEY].email === email && bcrypt.compareSync(password, users[KEY].password)) {
+    res.cookie('user_id', users[KEY].id);
       res.redirect('/urls');
       auth = true;
     };
@@ -261,12 +270,6 @@ function urlsForUser(id){
   }
   return specificDatabase;
 }
-
-// 1. Only registered users can shorten URLs X
-// 2. URLs belong to users X
-// 3. Users can only edit or delete their own URLs
-// 4. Users can only see their own shortened URLs X
-// 5. Anyone can visit short URLs
 
 
 
