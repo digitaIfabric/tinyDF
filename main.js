@@ -30,8 +30,8 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Database of short URL keys and the long URLS
 let urlDatabase = {
-    "b2xVn2": {url: "http://www.lighthouselabs.ca", userID: "dave" },
-    "9sm5xK": {url: "http://www.google.com", userID: "userRandomID"}
+    "b2xVn2": {url: "http://www.lighthouselabs.ca", userID: 'dave' },
+    "9sm5xK": {url: "http://www.google.com", userID: 'userRandomID'}
 };
 
 // Users object
@@ -46,8 +46,8 @@ let users = {
     email: "user2@example.com",
     password: bcrypt.hashSync("dishwasher-funk", saltRounds)
   },
-  "dave": {
-    id: "dave",
+  'dave': {
+    id: 'dave',
     email: "dwawryko@gmail.com",
     password: bcrypt.hashSync("123456", saltRounds)
   },
@@ -64,7 +64,8 @@ let users = {
 
 // Hello page
 app.get("/", (req, res) => {
-  res.end("Hello!");
+  res.render("index");
+  //res.end("Hello!");
 });
 
 // Sending urlDatabase data within the urls key
@@ -78,10 +79,13 @@ app.get("/urls", (req, res) => {
 
 // form urls_new to create/add new shortened URLs
 app.get('/urls/new', (req, res)=>{
-  let user_id = req.session['user_id'];
+  //let user_id = req.session['user_id']
+  let templateVars = {
+    user_id: users[req.session['user_id']]
+  };
   console.log(user_id);
   if (user_id){
-    res.render("urls_new", user_id);
+    res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
   }

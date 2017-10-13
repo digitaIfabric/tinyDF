@@ -6,14 +6,14 @@
 </head>
 
 <body>
-<% if (user_id !== null) { %>
+<% if (user_id) { %>
+    <span><%= user_id %></span>
+    <form action="/logout" method="POST">
+        <button>Logout</button>
+    </form>
+<% } else if (!user_id) { %>
     <a href="/login">login</a>
     <a href="/register">register</a>
-<% } else { %>
-<span><%= user_id %></span>
-<form action="/logout" method="POST">
-    <button>Logout</button>
-</form>
 <% } %>
 </body>
 </html>
