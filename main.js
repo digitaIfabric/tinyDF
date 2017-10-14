@@ -64,13 +64,18 @@ let users = {
 // ================================================================================
 
 // Hello page
-app.get("/", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
+app.get('/', (req, res)=>{
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 // Sending urlDatabase data within the urls key
 app.get("/urls", (req, res) => {
   let templateVars = {
+    users: users,
     urls: urlsForUser(req.session.user_id),
     user_id: req.session.user_id
   };
@@ -79,9 +84,12 @@ app.get("/urls", (req, res) => {
 
 // form urls_new to create/add new shortened URLs
 app.get('/urls/new', (req, res)=>{
-  let user_id = req.session.user_id;
-  if (user_id){
-    res.render("urls_new", {user_id: req.session.user_id});
+  let templateVars = {
+    users: users,
+    user_id: req.session.user_id
+  };
+  if (users[req.session.user_id].email){
+    res.render("urls_new", {users: users});
     //{name: req.cookies.username}
   } else {
     res.redirect("/login");
@@ -114,6 +122,7 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get('/urls/:id', (req, res)=>{
   let templateVars =  {
+    users: users,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].url,
     // users: users,

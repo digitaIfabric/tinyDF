@@ -6,12 +6,12 @@
 </head>
 
 <body>
-<% if (user_id) { %>
-    <span><%= user_id %></span>
+<% if (users[user_id].email) { %>
+    <span><%= users[user_id].email %></span>
     <form action="/logout" method="POST">
         <button>Logout</button>
     </form>
-<% } else if (!user_id) { %>
+<% } else { %>
     <a href="/login">login</a>
     <a href="/register">register</a>
 <% } %>
