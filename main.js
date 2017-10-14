@@ -89,7 +89,7 @@ app.get('/urls/new', (req, res)=>{
     user_id: req.session.user_id
   };
   if (users[req.session.user_id].email){
-    res.render("urls_new", {users: users});
+    res.render("urls_new", { users: users, user_id: req.session['user_id'] });
     //{name: req.cookies.username}
   } else {
     res.redirect("/login");
