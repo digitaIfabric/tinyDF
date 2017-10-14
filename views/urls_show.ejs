@@ -6,7 +6,7 @@
 <body>
 <form action='/urls/<%=shortURL%>' method='POST'>
     <li>
-        <%=longURL%> - <%=shortURL%>
+        <a href="/u/<%= shortURL %>"><%= shortURL %></a> - <a href="<%= longURL %>"><%= longURL %></a>
     </li>
     <input type="text" name="updatedURL" placeholder="<%= longURL%>">
     <button type="submit">Update</button>

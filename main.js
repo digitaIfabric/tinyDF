@@ -1,5 +1,5 @@
 // ================================================================================
-// Initialization and Require
+// Initialization and require
 // ================================================================================
 
 'use_strict;'
@@ -12,7 +12,6 @@ const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
 const cookieSession = require('cookie-session');
 const path = require('path');
-//const cookieParser = require('cookie-parser');
 
 app.use(cookieSession({
   name: 'session',
@@ -75,11 +74,15 @@ app.get('/', (req, res)=>{
 // Sending urlDatabase data within the urls key
 app.get("/urls", (req, res) => {
   let templateVars = {
-    users: users,
-    urls: urlsForUser(req.session.user_id),
-    user_id: req.session.user_id
-  };
-  res.render("urls_index", templateVars);
+      users: users,
+      urls: urlsForUser(req.session.user_id),
+      user_id: req.session.user_id
+    }
+  if (req.session.user_id) {
+    res.render("urls_index", templateVars);
+  } else {
+    res.send("You have to login");
+  }
 });
 
 // form urls_new to create/add new shortened URLs
@@ -102,7 +105,11 @@ app.get("/register", (req, res) => {
     users: users,
     user_id: req.session.user_id
   };
-  res.render('register', templateVars);
+  if (!users[req.session.user_id].email) {
+    res.render('register', templateVars);
+  } else {
+  res.redirect("/urls");
+  }
 });
 
 // Create a Login Page
@@ -150,7 +157,7 @@ app.post('/register', (req, res) => {
       users[user_id] = { id:user_id, email:email, password: bcrypt.hashSync(password, 10)};
       res.redirect('/urls');
   } else {
-    res.status(400).send('Please provide email and password');
+    res.status(400).send('Please provide email and password.');
   }
 });
 
@@ -160,9 +167,6 @@ app.post('/login', (req, res) => {
   let password = req.body.password;
   let auth;
   for (var KEY in users) {
-    // VERIFY PASSWORD
-    //if (users[KEY].email === email && users[KEY].password === password) {
-    // arg 1 password
     if (users[KEY].email === email && bcrypt.compareSync(password, users[KEY].password)) {
       req.session.user_id = users[KEY].id;
       res.redirect('/urls');
@@ -257,6 +261,3 @@ function belongsToUser(userid, dbuserid){
   }
   return false;
 }
-
-
-
