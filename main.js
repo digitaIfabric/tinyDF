@@ -22,8 +22,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 // View engine
 app.set("view engine", "ejs")
-app.set('views', path.join(__dirname, 'views'));
-
+// app.set('views', path.join(__dirname, 'views'));
+//
 // ================================================================================
 // Database and objects
 // ================================================================================
@@ -231,13 +231,13 @@ app.listen(PORT, () => {
 // Generate alphanumeric string
 function generateRandomString() {
   let NUM ='';
-  let CDS = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  let CDS = '©˙˚ªßæ«»¢∫øπ¥™∂∑œ';
   let length = 6;
   for (var i = 0; i < length; i++){
     NUM += CDS.charAt(Math.floor(Math.random() * (CDS.length + 1) ));
   }
   let POS = Math.floor(Math.random() * length)+1;
-  let result = NUM.substr(0, POS) + "DF" + NUM.substr(POS);
+  let result = NUM.substr(0, POS) + "∞∆" + NUM.substr(POS);
   return result;
 }
 
